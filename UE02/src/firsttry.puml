@@ -1,0 +1,12 @@
+@startuml
+'https://plantuml.com/use-case-diagram
+
+
+[*] --> Home
+Home --> Login
+Login --> Dashboard
+Dashboard --> Home
+
+
+
+@endusl
