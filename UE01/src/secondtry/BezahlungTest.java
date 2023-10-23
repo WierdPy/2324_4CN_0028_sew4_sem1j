@@ -1,9 +1,8 @@
-package firsttry;
+package secondtry;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static firsttry.Bezahlung.count;
-import static firsttry.Bezahlung.todo;
+import static secondtry.Bezahlung.todo;
 
 public class BezahlungTest {
 
@@ -96,16 +95,16 @@ public class BezahlungTest {
 
     @Test
     public void testTrickyHtml() {
-        //assertEquals(1, todo(" eins<html"));
+        assertEquals(1, todo(" eins<html"));
 
-        //assertEquals(2, todo(" eins<img alt=\"<bild>\" > zwei"));
+        assertEquals(2, todo(" eins<img alt=\"<bild>\" > zwei"));
 
-        //assertEquals(2, todo(" eins<img alt=\"bild>\" > zwei"));
+        assertEquals(2, todo(" eins<img alt=\"bild>\" > zwei"));
 
 
-        //assertEquals(2, todo(" eins<img alt=\"<bild>\" keinwort> zwei"));
+        assertEquals(2, todo(" eins<img alt=\"<bild>\" keinwort> zwei"));
 
-        //assertEquals(2, todo(" eins<img alt=\"<bild>\" src=\"bild.png\" >zwei"));
+        assertEquals(2, todo(" eins<img alt=\"<bild>\" src=\"bild.png\" >zwei"));
 
         assertEquals(2, todo(" eins<img alt=\"<bild\" keinwort>zwei"));
 

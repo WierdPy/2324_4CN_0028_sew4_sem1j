@@ -1,12 +1,19 @@
 @startuml
 'https://plantuml.com/use-case-diagram
+'!theme spacelab
 
-
-[*] --> Home
-Home --> Login
-Login --> Dashboard
-Dashboard --> Home
-
-
+[*] --> NO_WORD
+NO_WORD --> TAG : "<"
+NO_WORD --> WORD : [a-zA-Z]
+WORD --> NO_WORD : [^a-zA-Z]
+WORD --> TAG : "<"
+TAG --> TAG_QUOTE : "\""
+'TAG --> TAG : "\"
+TAG --> TAG : "<"
+TAG --> NO_WORD : ">"
+'TAG_QUOTE --> TAG_QUOTE : "\""
+TAG_QUOTE --> TAG : "\""
+'TAG_QUOTE --> TAG_QUOTE : "\""
+'TAG_QUOTE --> NO_WORD : "\""
 
 @endusl
