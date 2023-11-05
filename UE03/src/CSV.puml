@@ -1,13 +1,43 @@
 @startuml
 'https://plantuml.com/use-case-diagram
 '!theme spacelab
+'
+'QUOTE -> WORD -> QUOTE -> WORD #IST NO GO
+'QUOTE -> , -> zählt nicht #IST NO GO
+'"ok","ok, ok",ok"ok","nicht"ok,"nicht ok
+'[*] --> INIT
+'INIT --> QUOTE : "
+'QUOTE --> WORD : [a-zA-Z]
+'WORD --> QUOTE : "
+'INIT --> WORD : [a-zA-Z]
 
-'ein counter for Quotes checker einschalten, wenn der 2 wird speichern
-'wenn der counter nie 2
-[*] --> INIT
-INIT --> QUOTE : "\""
-INIT --> WORD : [a-zA-Z]
-QUOTE --> WORD : [^a-zA-Z]
-QUOTE --> QUOTE : "\""
-WORD --> QUOTE : "\""
-@endusl
+
+[*] --> NOCELL
+
+state CELL {
+    CELL --> NOCELL : ,
+    CELL --> CELL : *
+}
+
+state NOCELL {
+    NOCELL --> CELL : *
+    NOCELL --> STRINGCELL : "
+    NOCELL --> NOCELL : ,
+    NOCELL --> NOCELL : Whitespace
+}
+
+state STRINGCELL {
+    STRINGCELL --> STRINGEND : "
+    STRINGCELL --> STRINGCELL : *
+    STRINGCELL --> EXEPTION : end
+}
+
+state STRINGEND {
+    STRINGEND --> EXEPTION : *
+    STRINGEND --> NOCELL : ,
+    STRINGEND --> STRINGCELL : "
+}
+
+state EXEPTION {
+}
+@enduml

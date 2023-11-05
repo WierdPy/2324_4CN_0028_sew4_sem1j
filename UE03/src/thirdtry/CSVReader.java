@@ -3,73 +3,142 @@ package thirdtry;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * Created by Burhan Özbek on 10.10.2023
  */
+//"ok","ok, ok",ok"ok","nicht"ok,"nicht ok
+    //WAS SOLL ICH DARAUS VERTSTEHEN
 
+/**
+ * CSV-line and splits it into a String array
+ */
 public class CSVReader {
 
-    private static int totalCount;
-    private static char bufferChar;
-    public static List<String> split(String input){
+    /**
+     * whitespaces should be skipped
+     */
+    boolean skipinitialspace;
+    /**
+     * splits the data -> character
+     */
+    char delimiter; //,
+    /**
+     * field delimiter -> character
+     * String fängt mit dem Zeichen an und auf
+     */
+    char doublequote;
 
-        totalCount = 0;
-        //"ok","ok, ok",ok"ok","nicht"ok,"nicht ok
-        //• ein Feldbegrenzer mitten in einem Feld ohne Feldbegrenzer ist zulässig
-        //• Text nach dem abschließenden Feldbegrenzer ist nicht zulässig (Exception)
-        //• ein fehlender Feldbegrenzer am Ende ist auch ein Fehler
-        enum CSVReaderFSM {
-            INIT {
-                public CSVReaderFSM processNext(char currentChar) {
-                    if (currentChar == '"') {
-                        return QUOTE;
-                    }
-                    if (Character.isLetter(currentChar)) {
-                        return WORD;
+    /**
+     * save current Word for List
+     */
+    String currentWord = "";
 
-                    }
-                    return INIT;
+    /**
+     * adding data sets -> List
+     */
+    List<String> list = new ArrayList<>();
+
+    /**
+     * @param skipinitialspace if Whitespace should be skipped
+     * @param delimiter        Trennzeichen zwischen Feldern
+     * @param doublequote      Feldbegrenzer
+     *                         Default Constructor
+     */
+    public CSVReader(boolean skipinitialspace, char delimiter, char doublequote) {
+        this.skipinitialspace = skipinitialspace;
+        this.delimiter = delimiter;
+        this.doublequote = doublequote;
+    }
+
+    /**
+     * Statemachine
+     */
+    private enum State {
+        NOCELL {
+            @Override
+            CSVReader.State handleChar(char c, CSVReader csv) {
+                if (Character.isWhitespace(c) && csv.skipinitialspace) {
+                    return NOCELL;
                 }
-            },
-            WORD {
-                public CSVReaderFSM processNext(char currentChar) {
-                    if (currentChar == '"') {
-                        return QUOTE;
-                    }
-                    if (currentChar == ',') {
-                        return INIT;
-                    }
-                    if (Character.isLetter(currentChar)) {
-                        return WORD;
-                    }
-                    return WORD;
+                if (c == csv.doublequote) {
+                    return STRINGCELL;
                 }
-            },
-            QUOTE{
-                public CSVReaderFSM processNext(char currentChar) {
-                    if (currentChar == '"') {
-                        return WORD;
-                    }
-                    if (Character.isLetter(currentChar)) {
-                        return WORD;
-                    }
-                    return QUOTE;
+                if (c == csv.delimiter) {
+                    csv.list.add(csv.currentWord);
+                    //csv.currentWord = "";
+                    return NOCELL;
                 }
-            };
-            public abstract CSVReaderFSM processNext(char currentChar);
+                csv.currentWord += c;
+                return CELL;
+            }
+        },
+        CELL {
+            @Override
+            CSVReader.State handleChar(char c, CSVReader csv) {
+                if (c == csv.delimiter) {
+                    csv.list.add(csv.currentWord);
+                    csv.currentWord = "";
+                    return NOCELL;
+                }
+//                if (c == csv.doublequote) {
+//                    return STRINGCELL;
+//                }
+                csv.currentWord += c;
+                return CELL;
+            }
+        },
+        STRINGCELL {
+            @Override
+            CSVReader.State handleChar(char c, CSVReader csv) {
+                if (c == csv.doublequote) {
+                    return STRINGEND;
+                }
+                csv.currentWord += c;
+                return STRINGCELL;
+            }
+        },
+        //für doppelt " gedacht
+        STRINGEND {
+            @Override
+            CSVReader.State handleChar(char c, CSVReader csv) {
+                if (c == csv.doublequote) {
+                    csv.currentWord += '"';
+                    return STRINGCELL;
+                }
+                if (c == csv.delimiter) {
+                    csv.list.add(csv.currentWord);
+                    csv.currentWord = "";
+                    return NOCELL;
+                }
+                csv.currentWord += c;
+                throw new IllegalArgumentException();
+            }
+        };
+
+        /**
+         * @param c   Character
+         * @param cvs CSV File
+         * @return States
+         */
+        abstract CSVReader.State handleChar(char c, CSVReader cvs);
+    }
+
+    /**
+     * splitet CSV line zu String Array
+     * @param line
+     * @return String[]
+     */
+    public String[] split(String line) {
+        State state = State.NOCELL;
+        this.currentWord = "";
+        this.list = new ArrayList<>();
+        for (int i = 0; i < line.length(); i++) {
+            state = state.handleChar(line.charAt(i), this);
         }
-
-        CSVReaderFSM state = CSVReaderFSM.INIT;
-        char[] charArray = input.toCharArray();
-        for (char newChar : charArray) {
-            state = state.processNext(newChar);
-            bufferChar = newChar;
+        this.list.add(currentWord);
+        if (state == State.STRINGCELL) {
+            throw new IllegalArgumentException();
         }
-
-        List<String> result = new ArrayList<>();
-        result.add("Element1");
-        result.add("Element2");
-        return result;
+        return list.toArray(new String[0]);
     }
 }
